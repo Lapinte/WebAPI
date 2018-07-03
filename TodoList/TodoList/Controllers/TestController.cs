@@ -96,9 +96,9 @@ namespace TodoList.Controllers
         public IHttpActionResult PostTest(TestModel test)
         {
             XDocument doc = XDocument.Load(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
-            XElement last = (XElement)doc.Root.LastNode;
 
             XElement newElem = new XElement("Test");
+            XElement last = (XElement)doc.Root.LastNode;
             newElem.Add(new XElement("ID", int.Parse(last.Element("ID").Value) + 1));
             newElem.Add(new XElement("Commentaire", test.Commentaire));
 
@@ -107,6 +107,7 @@ namespace TodoList.Controllers
                 return BadRequest();
             }
             doc.Root.Add(newElem);
+            doc.Save(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
 
             return Ok(doc);
         }
