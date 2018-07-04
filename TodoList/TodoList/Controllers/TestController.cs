@@ -117,5 +117,67 @@ namespace TodoList.Controllers
 
             return CreatedAtRoute("DefaultApi", new { id = test.ID }, test);
         }
+
+        //PUT : api/test
+        [ResponseType(typeof(TestModel))]
+        public IHttpActionResult PutTest(int id,TestModel test)
+        {
+            //Tester l'id avec l'id de test
+            if (id != test.ID)
+            {
+                return BadRequest();
+            }
+
+            //Récuperer le document XML
+            XDocument doc = XDocument.Load(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
+            //Rechercher le Xelement en fonction de l'id et retourner NotFound si non trouvé
+            var elem = doc.Descendants("Test").SingleOrDefault(
+                x => int.Parse(x.Element("ID").Value) == id);
+            if (elem == null)
+            {
+                return NotFound();
+            }
+            //Modifier les valeurs ID et Commentaire avec celles de test
+            elem.Element("Commentaire").Value = test.Commentaire;
+            //Sauvegarder
+            doc.Save(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
+
+            return StatusCode(HttpStatusCode.NoContent);
+            /*return Ok(new TestModel
+                    {
+                        ID = int.Parse(elem.Element("ID").Value),
+                        Commentaire = elem.Element("Commentaire").Value
+                    });*/
+
+        }
+
+        //DELETE : api/test
+        [ResponseType(typeof(TestModel))]
+        public IHttpActionResult DeleteTest(int id)
+        {
+            //Récuperer le document XML
+            XDocument doc = XDocument.Load(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
+
+            //Rechercher le Xelement en fonction de l'id et retourner NotFound si non trouvé
+            var elemASuppr = doc.Descendants("Test").SingleOrDefault(
+                x => int.Parse(x.Element("ID").Value) == id);
+            if (elemASuppr == null)
+            {
+                return NotFound();
+            }
+
+            //Supprimer l'élément
+            elemASuppr.Remove();
+
+            //Sauvegarder
+            doc.Save(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
+
+            return Ok(new TestModel
+            {
+                ID = id,
+                Commentaire = elemASuppr.Element("Commentaire").Value
+            });
+        }
+
     }
 }
