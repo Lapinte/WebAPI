@@ -93,23 +93,29 @@ namespace TodoList.Controllers
         }
 
         //POST : api/test
+        [ResponseType(typeof(TestModel))]
         public IHttpActionResult PostTest(TestModel test)
         {
-            XDocument doc = XDocument.Load(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
-
-            XElement newElem = new XElement("Test");
-            XElement last = (XElement)doc.Root.LastNode;
-            newElem.Add(new XElement("ID", int.Parse(last.Element("ID").Value) + 1));
-            newElem.Add(new XElement("Commentaire", test.Commentaire));
-
             if (test.ID != 0)
             {
                 return BadRequest();
             }
-            doc.Root.Add(newElem);
+
+            XDocument doc = XDocument.Load(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
+
+            var idMax = doc.Descendants("Test").Max(x => int.Parse(x.Element("ID").Value));
+            idMax++;
+            test.ID = idMax;
+
+
+            XElement element = new XElement("Test");
+            element.Add(new XElement("ID", test.ID));
+            element.Add(new XElement("Commentaire", test.Commentaire));
+            doc.Element("Tests").Add(element);
             doc.Save(System.Web.Hosting.HostingEnvironment.MapPath("~/donnees.xml"));
 
-            return Ok(doc);
+
+            return CreatedAtRoute("DefaultApi", new { id = test.ID }, test);
         }
     }
 }
