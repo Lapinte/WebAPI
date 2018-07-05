@@ -6,10 +6,12 @@ using System.Web;
 
 namespace TodoList.Models
 {
+    [Table(name:"Todos")]
     public class Todo
     {
         public int ID { get; set; }
 
+        //[Column("Nom")]
         public string Name { get; set; }
 
         public bool Done { get; set; }
