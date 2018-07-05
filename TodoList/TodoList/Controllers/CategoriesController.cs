@@ -7,6 +7,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using TodoList.Data;
 using TodoList.Models;
+using System.Data.Entity;
 
 namespace TodoList.Controllers
 {
@@ -24,7 +25,7 @@ namespace TodoList.Controllers
         [ResponseType(typeof(Category))]
         public IHttpActionResult GetCategory(int id)
         {
-            var category = db.Categories.SingleOrDefault(x => x.ID == id);
+            var category = db.Categories.Find(id);
             if (category == null)
                 return NotFound();
 
@@ -54,15 +55,22 @@ namespace TodoList.Controllers
             {
                 return BadRequest();
             }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            var categoryToModify = db.Categories.SingleOrDefault(x => x.ID == id);
-            if (categoryToModify == null)
+            db.Entry(category).State = EntityState.Modified;
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (Exception)
+            {
                 return NotFound();
 
-            categoryToModify.Name = category.Name;
-
-            db.SaveChanges();
-
+            }
 
             return StatusCode(HttpStatusCode.NoContent);
         }
@@ -70,18 +78,14 @@ namespace TodoList.Controllers
         [ResponseType(typeof(Category))]
         public IHttpActionResult DeleteCategory(int id)
         {
-            var elemASuppr = db.Categories.SingleOrDefault(x => x.ID == id);
+            var elemASuppr = db.Categories.Find(id);
             if (elemASuppr == null)
             {
                 return NotFound();
             }
             db.Categories.Remove(elemASuppr);
             db.SaveChanges();
-            return Ok(new Category
-            {
-                ID = id,
-                Name = elemASuppr.Name
-            });
+            return Ok(elemASuppr);
         }
 
         //réécriture de la méthode dispose pour libérer en mmémoire le DbContext
