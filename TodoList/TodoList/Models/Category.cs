@@ -11,7 +11,7 @@ namespace TodoList.Models
         public int ID { get; set; }
 
         [Required(ErrorMessage ="Le champ nom est obligatoire")]
-        [RegularExpression("^[A-Z][a-z0-9_-]{5, 20}$", ErrorMessage = "Mauvais format")]
+        [RegularExpression("^[A-Z][a-z0-9_-]{5,20}$", ErrorMessage = "Mauvais format")]
 
         public string Name { get; set; }
 
