@@ -11,17 +11,26 @@ using System.Data.Entity;
 
 namespace TodoList.Controllers
 {
+    [RoutePrefix("api/categories")]
     public class CategoriesController : ApiController
     {
         //ouverture de la connexion à la db
         private TodoListDbContext db = new TodoListDbContext();
 
-        
+        [ResponseType(typeof(Category))]
         public List<Category> GetCategories()
         {
             return db.Categories.Where(x=> !x.Deleted).ToList();
         }
 
+        [Route("{name}")]
+        [ResponseType(typeof(Category))]
+        public List<Category> GetCategories(string name)
+        {
+            return db.Categories.Where(x => !x.Deleted && x.Name.Contains(name)).ToList();
+        }
+
+        [Route("{id:int}")]
         [ResponseType(typeof(Category))]
         public IHttpActionResult GetCategory(int id)
         {
@@ -33,11 +42,10 @@ namespace TodoList.Controllers
         }
 
 
-
         [ResponseType(typeof(Category))]
         public  IHttpActionResult PostCategory(Category category)
         {
-            if (! ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -48,6 +56,7 @@ namespace TodoList.Controllers
             return CreatedAtRoute("DefaultApi", new { id = category.ID }, category);
         }
 
+        [Route("{id:int}")]
         [ResponseType(typeof(Category))]
         public IHttpActionResult PutCategory(int id, Category category)
         {
@@ -59,6 +68,8 @@ namespace TodoList.Controllers
             {
                 return BadRequest(ModelState);
             }
+            if (db.Categories.Find(id).Deleted)
+                return BadRequest();
 
             db.Entry(category).State = EntityState.Modified;
 
@@ -75,6 +86,7 @@ namespace TodoList.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
+        [Route("{id:int}")]
         [ResponseType(typeof(Category))]
         public IHttpActionResult DeleteCategory(int id)
         {
@@ -83,7 +95,10 @@ namespace TodoList.Controllers
             {
                 return NotFound();
             }
-            db.Categories.Remove(elemASuppr);
+            //db.Categories.Remove(elemASuppr);
+            elemASuppr.Deleted = true;
+            elemASuppr.DeletedAt = DateTime.Now;
+            db.Entry(elemASuppr).State = System.Data.Entity.EntityState.Modified;
             db.SaveChanges();
             return Ok(elemASuppr);
         }
