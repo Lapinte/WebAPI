@@ -19,7 +19,7 @@ namespace TodoList.Controllers
         
         public List<Category> GetCategories()
         {
-            return db.Categories.ToList();
+            return db.Categories.Where(x=> !x.Deleted).ToList();
         }
 
         [ResponseType(typeof(Category))]
